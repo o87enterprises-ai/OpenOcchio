@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenOcchio</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <!-- Settings Overlay -->
+    <div id="settings-panel" class="overlay">
+        <div class="modal">
+            <img src="assets/logo.png" alt="OpenOcchio Logo" style="width: 100px; display: block; margin: 0 auto 20px;">
+            <h2>OpenOcchio Setup</h2>
+            <div class="form-group">
+                <label>AI App URL (e.g., https://chat.openai.com)</label>
+                <input type="text" id="target-url" placeholder="https://..." value="https://www.google.com">
+            </div>
+            <div class="form-group">
+                <label>Ollama/API URL</label>
+                <input type="text" id="api-url" value="http://127.0.0.1:11434">
+            </div>
+            <div class="form-group">
+                <label>Model Name</label>
+                <input type="text" id="model-name" value="qwen2.5:3b">
+            </div>
+            <button id="launch-btn">Launch OpenOcchio Engine</button>
+            <p class="hint">Note: Some sites block iframes. Local Ollama WebUIs work best.</p>
+        </div>
+    </div>
+
+    <!-- Main View -->
+    <div id="main-view" class="hidden">
+        <iframe id="inference-frame" src=""></iframe>
+        
+        <!-- Floating Widget -->
+        <div id="confidence-widget" class="widget collapsed">
+            <div class="widget-header" id="widget-toggle">
+                <img src="assets/logo.png" alt="Logo" style="width: 16px; height: 16px; margin-right: 8px;">
+                <span class="pulse-dot"></span>
+                <span id="widget-label">OpenOcchio Gauge</span>
+                <span id="expand-icon">▲</span>
+            </div>
+            <div class="widget-body">
+                <div class="gauge-container">
+                    <div id="gauge-bar"></div>
+                </div>
+                <div class="score-display">
+                    <span id="conf-score">0.00</span>
+                    <span id="conf-label">Ready</span>
+                </div>
+                <div class="status-msg">Monitoring session...</div>
+                <button id="manual-check">Run Confidence Check</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
