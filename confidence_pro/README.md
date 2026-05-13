@@ -1,5 +1,7 @@
 # <img src="assets/logo.png" width="40" vertical-align="middle"> OpenOcchio
 
+**Developed by OpenEdin, a subsidiary of o87Dev Software Engineering.**
+
 **The AI Integrity Gauge — Bringing Transparency to Every Response.**
 
 OpenOcchio (the "Open Eye") is a consumer-grade AI Confidence Indicator designed for browsers, desktop apps, and mobile devices. Like the legendary puppet who inspired its name, OpenOcchio watches for "growing noses" in AI responses by calculating real-time confidence scores.
