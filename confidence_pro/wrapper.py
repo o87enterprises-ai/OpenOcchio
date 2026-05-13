@@ -24,11 +24,13 @@ def get_llama_response(prompt, temperature=0.0):
             "logprobs": True
         }
     }
-    resp = requests.post(OLLAMA_URL, json=payload)
-    if resp.status_code != 200:
-        raise Exception(f"Ollama error: {resp.text}")
-    data = resp.json()
-    return data
+    try:
+        resp = requests.post(OLLAMA_URL, json=payload, timeout=10)
+        if resp.status_code != 200:
+            return {"response": f"Error: Ollama returned {resp.status_code}", "logprobs": []}
+        return resp.json()
+    except requests.exceptions.RequestException as e:
+        return {"response": f"Connection Error: {e}", "logprobs": []}
 
 def confidence_from_logprobs(logprobs_list):
     """Convert per-token logprobs to a confidence score."""
