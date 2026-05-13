@@ -1,4 +1,8 @@
-# <img src="confidence_pro/assets/logo.png" width="40" vertical-align="middle"> OpenOcchio
+<p align="center">
+  <img src="confidence_pro/assets/logo.png" width="600">
+</p>
+
+# OpenOcchio
 
 **Developed by OpenEdin, a subsidiary of o87Dev Software Engineering.**
 
