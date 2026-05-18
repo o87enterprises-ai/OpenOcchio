@@ -26,27 +26,42 @@ else:
 
 class PromptInput(BaseModel):
     prompt: str
+    mode: str = "generate"          # "generate" (Ask AI) or "verify" (Analyze Text)
     model: str = "llama3-8b-8192"   # can be any Groq model
     temperature: float = 0.0
     max_tokens: int = 256
-
-def confidence_from_logprobs(logprobs_list):
-    """Convert token logprobs to a confidence score 0-1."""
-    if not logprobs_list:
-        return 0.5
-    # logprobs are negative; exp to probability
-    probs = [math.exp(lp) for lp in logprobs_list if lp is not None]
-    if not probs:
-        return 0.5
-    avg = sum(probs) / len(probs)
-    return min(1.0, max(0.0, avg))
 
 @app.post("/confidence")
 def get_confidence(input: PromptInput):
     if not client:
         return {"error": "GROQ_API_KEY environment variable not set", "status": 500}
-        
-    # Call Groq with logprobs enabled
+    
+    if input.mode == "verify":
+        # JUDGE MODE: Analyze existing text for confidence markers
+        judge_prompt = (
+            f"Analyze the following AI response for CONFIDENCE markers. "
+            f"Rate how sure the AI sounds on a scale of 0 to 100. "
+            f"Consider hedging (e.g., 'maybe', 'I think') as low confidence. "
+            f"Respond ONLY with the number.\n\n"
+            f"AI Response to Analyze: \"{input.prompt}\"\n\n"
+            f"Confidence Score:"
+        )
+        chat_completion = client.chat.completions.create(
+            messages=[{"role": "user", "content": judge_prompt}],
+            model=input.model,
+            temperature=0.0,
+            max_tokens=10,
+        )
+        try:
+            score_text = chat_completion.choices[0].message.content.strip()
+            # Extract number
+            match = re.search(r'\d+', score_text)
+            score = float(match.group()) / 100.0 if match else 0.5
+            return {"confidence": round(score, 4), "model": input.model, "method": "judge-analysis"}
+        except:
+            return {"confidence": 0.5, "model": input.model, "method": "judge-error"}
+
+    # GENERATION MODE: Ask AI and get logprobs
     chat_completion = client.chat.completions.create(
         messages=[{"role": "user", "content": input.prompt}],
         model=input.model,

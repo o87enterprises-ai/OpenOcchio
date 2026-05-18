@@ -59,6 +59,33 @@ h1 {
     font-size: 0.9rem;
 }
 
+.mode-selector {
+    display: flex;
+    background: #e5e5ea;
+    padding: 2px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background: transparent;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    width: auto; /* override global button width */
+}
+
+.mode-btn.active {
+    background: white;
+    color: var(--text-main);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
 .input-group {
     margin-bottom: 16px;
 }

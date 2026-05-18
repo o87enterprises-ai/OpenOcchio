@@ -17,9 +17,14 @@
         </header>
 
         <main>
+            <div class="mode-selector">
+                <button type="button" class="mode-btn active" data-mode="generate">Ask AI</button>
+                <button type="button" class="mode-btn" data-mode="verify">Verify Text</button>
+            </div>
+
             <form id="confidence-form">
                 <div class="input-group">
-                    <textarea id="prompt-input" placeholder="Enter a prompt to verify..." required rows="3"></textarea>
+                    <textarea id="prompt-input" placeholder="Enter a prompt to verify..." required rows="4"></textarea>
                 </div>
                 <button type="submit" id="submit-btn">Check Confidence</button>
             </form>

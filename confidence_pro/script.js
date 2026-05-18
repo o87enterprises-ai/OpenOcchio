@@ -7,6 +7,25 @@ const form = document.getElementById('confidence-form');
 const input = document.getElementById('prompt-input');
 const resultDiv = document.getElementById('result');
 const submitBtn = document.getElementById('submit-btn');
+const modeBtns = document.querySelectorAll('.mode-btn');
+
+let currentMode = 'generate';
+
+// Mode Switching
+modeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentMode = btn.dataset.mode;
+        
+        // Update placeholder
+        if (currentMode === 'generate') {
+            input.placeholder = "Ask a question to see AI confidence...";
+        } else {
+            input.placeholder = "Paste an AI response here to analyze its confidence markers...";
+        }
+    });
+});
 
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -20,7 +39,11 @@ form.addEventListener('submit', async (e) => {
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: prompt, model: "llama3-8b-8192" })
+            body: JSON.stringify({ 
+                prompt: prompt, 
+                mode: currentMode,
+                model: "llama3-8b-8192" 
+            })
         });
 
         if (!response.ok) {
