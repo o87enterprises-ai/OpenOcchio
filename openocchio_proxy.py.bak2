@@ -4,56 +4,19 @@ import re
 import requests
 from mitmproxy import http, ctx
 
-# ------------------------------------------------------------
-# Dedicated debug log (clean, no terminal flood)
-# ------------------------------------------------------------
-DEBUG_LOG = "/tmp/occhio_debug.log"
-
-def log(msg):
-    """Write to mitmproxy log and our own clean file."""
-    ctx.log.info(msg)
-    with open(DEBUG_LOG, "a") as f:
-        f.write(msg + "\n")
-
-# ------------------------------------------------------------
-# Configuration
-# ------------------------------------------------------------
+# AI hosts we care about
 AI_HOSTS = [
     "claude.ai",
     "api.anthropic.com",
     "chat.deepseek.com",
 ]
 
+# Ollama judge endpoint
+OLLAMA_URL = "http://localhost:11434/api/generate"
+
+# Overlay update endpoint
 OVERLAY_URL = "http://localhost:9876/update"
 
-def calculate_confidence(text: str) -> float:
-    text_lower = text.lower()
-    words = text_lower.split()
-
-    # Length bonus for very short factual answers
-    if len(words) <= 10 and any(word in text_lower for word in ["yes","no","is","are","equals","="]):
-        length_bonus = 0.3
-    else:
-        length_bonus = 0.0
-
-    low_weight = {
-        "i'm not sure":0.8, "i don't know":0.9, "it depends":0.6, "maybe":0.5,
-        "might be":0.5, "possibly":0.4, "i think":0.3, "in my opinion":0.4,
-        "not certain":0.7, "hard to say":0.8, "unknown":0.9
-    }
-    high_weight = {
-        "certainly":0.9, "absolutely":1.0, "without a doubt":1.0, "definitely":0.9,
-        "it is clear":0.8, "always":0.7, "never":0.7, "undoubtedly":1.0,
-        "yes, it is":0.9, "that is correct":0.9, "the fact is":0.8
-    }
-
-    low_score = sum(w for phrase,w in low_weight.items() if phrase in text_lower)
-    high_score = sum(w for phrase,w in high_weight.items() if phrase in text_lower)
-
-    total = low_score + high_score + 0.001
-    raw_conf = high_score / total
-    conf = min(0.95, raw_conf + length_bonus)
-    return max(0.05, conf)
 
 def response(flow: http.HTTPFlow) -> None:
     host = flow.request.pretty_host
@@ -62,13 +25,8 @@ def response(flow: http.HTTPFlow) -> None:
     if not any(h in host for h in AI_HOSTS):
         return
 
-    # Filter out noise (e.g., DeepSeek settings)
-    if "/settings" in flow.request.path:
-        return
-
-    # Minimal live terminal cue
     print(f">>> AI response from {host}{flow.request.path} <<<")
-    log(f"AI response from {host}{flow.request.path}")
+    ctx.log.info(f"AI response from {host}{flow.request.path}")
 
     content_type = flow.response.headers.get("content-type", "")
     resp_data = None
@@ -78,7 +36,7 @@ def response(flow: http.HTTPFlow) -> None:
         try:
             resp_data = json.loads(flow.response.text)
         except:
-            log("Response JSON parsing failed, skipping")
+            ctx.log.info("Response JSON parsing failed, skipping")
             return
     elif "text/event-stream" in content_type:
         # Streaming SSE response – collect the final text
@@ -106,10 +64,10 @@ def response(flow: http.HTTPFlow) -> None:
         if full_text:
             resp_data = {"choices": [{"message": {"content": full_text}}]}
         else:
-            log("SSE stream contained no text, skipping")
+            ctx.log.info("SSE stream contained no text, skipping")
             return
     else:
-        log(f"Unhandled content-type: {content_type}, skipping")
+        ctx.log.info(f"Unhandled content-type: {content_type}, skipping")
         return
 
     conf = None
@@ -124,7 +82,7 @@ def response(flow: http.HTTPFlow) -> None:
     except:
         pass
 
-    # 2. Fallback: rule‑based confidence (fast, no network, no timeout)
+    # 2. Fallback: ask local Ollama judge
     if conf is None:
         ai_text = ""
         try:
@@ -136,13 +94,32 @@ def response(flow: http.HTTPFlow) -> None:
                 pass
 
         if ai_text:
-            log(f"AI TEXT: {ai_text[:200]}")
-            conf = calculate_confidence(ai_text)
-            log(f"Heuristic score: confidence={conf}")
+            prompt = (
+                f'Rate how CONFIDENT this AI response sounds (0-100). '
+                f'Consider hedging, refusal, or assertiveness. ONLY the number.\n'
+                f'Response: "{ai_text}"\nConfidence:'
+            )
+            try:
+                r = requests.post(OLLAMA_URL, json={
+                    "model": "qwen2.5:3b",
+                    "prompt": prompt,
+                    "stream": False,
+                    "options": {"temperature": 0.0, "num_predict": 5}
+                }, timeout=15)
+                judge_raw = r.json().get("response", "")
+                m = re.search(r'\b(\d+(?:\.\d+)?)\b', judge_raw)
+                if m:
+                    num = float(m.group(1))
+                    if num > 1: num /= 100.0
+                    conf = max(0.0, min(1.0, num))
+                ctx.log.info(f"Judge raw: '{judge_raw}' -> confidence {conf}")
+            except Exception as e:
+                ctx.log.error(f"Ollama call failed: {e}")
+                conf = 0.5
 
     if conf is not None:
         try:
-            requests.post(OVERLAY_URL, json={"confidence": conf}, timeout=1, proxies={"http": None, "https": None})
-            log(f"Sent confidence {conf} to overlay")
+            requests.post(OVERLAY_URL, json={"confidence": conf}, timeout=1)
+            ctx.log.info(f"Sent confidence {conf} to overlay")
         except Exception as e:
-            log(f"Failed to update overlay: {e}")
+            ctx.log.error(f"Failed to update overlay: {e}")
