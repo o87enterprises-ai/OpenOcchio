@@ -92,8 +92,20 @@ function displayResult(data) {
         color = 'var(--danger)';
     }
 
+    // Map confidence to nose width (High conf 1.0 = short nose 10%, Low conf 0.0 = long nose 80%)
+    const inverseConf = 1.0 - confidence;
+    const noseWidthPercent = 10 + (inverseConf * 70);
+
+    // Color interpolation for CSS
+    const r = Math.round(255 * (1 - confidence));
+    const g = Math.round(255 * confidence);
+    const rgbColor = `rgb(${r}, ${g}, 0)`;
+
     resultDiv.innerHTML = `
         <div class="score-container">
+            <div class="nose-gauge-container">
+                <div class="nose-triangle" style="width: ${noseWidthPercent}%; background: ${rgbColor}"></div>
+            </div>
             <div class="score-circle" style="border-color: ${color}">
                 <div class="score-value" style="color: ${color}">${(confidence * 100).toFixed(0)}%</div>
                 <div class="score-label" style="color: ${color}">${label}</div>
