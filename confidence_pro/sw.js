@@ -1,4 +1,4 @@
-const CACHE_NAME = 'openocchio-v1';
+const CACHE_NAME = 'openocchio-v2';
 const ASSETS = [
   './',
   'index.html',
