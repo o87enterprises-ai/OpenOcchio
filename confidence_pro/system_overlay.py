@@ -42,50 +42,59 @@ class NoseGauge(QWidget):
         h = self.height()
         cx = 50 # Head center X
         cy = h // 2
-        head_radius = 35
+        head_radius = 40
 
-        # 1. Draw Head
-        painter.setBrush(QColor("#fdf5e6"))
-        painter.setPen(QPen(QColor(OUTLINE_DARK), 2))
+        # 1. Draw Head (Wood Texture)
+        head_grad = QRadialGradient(cx - 10, cy - 10, head_radius + 20)
+        head_grad.setColorAt(0, QColor("#e6ccb2")) # wood-light
+        head_grad.setColorAt(0.6, QColor("#d2a679")) # wood-base
+        head_grad.setColorAt(1, QColor("#8b5a2b")) # wood-dark
+        
+        painter.setBrush(head_grad)
+        painter.setPen(QPen(QColor(OUTLINE_DARK), 3))
         painter.drawEllipse(cx - head_radius, cy - head_radius, head_radius * 2, head_radius * 2)
 
         # 2. Draw Eyes
-        painter.setBrush(QColor(OUTLINE_DARK))
-        painter.drawEllipse(cx - 12, cy - 8, 6, 6)
-        painter.drawEllipse(cx + 6, cy - 8, 6, 6)
+        painter.setBrush(QColor("#1d1d1f"))
+        painter.setPen(Qt.NoPen)
+        painter.drawEllipse(cx - 15, cy - 10, 8, 8)
+        painter.drawEllipse(cx + 7, cy - 10, 8, 8)
 
         # 3. Draw Nose
         inverse_conf = 1.0 - self.confidence
-        # Nose length mapping: min 20 to max 110
-        nose_length = 20 + (inverse_conf * 90)
+        nose_length = 24 + (inverse_conf * 110)
         
         state_label, color_hex = interpret_confidence(self.confidence)
         color = QColor(color_hex)
 
-        painter.setBrush(QColor(WOOD_BASE))
+        nose_grad = QRadialGradient(cx, cy, nose_length)
+        nose_grad.setColorAt(0, QColor("#d2a679"))
+        nose_grad.setColorAt(1, QColor("#8b5a2b"))
+
+        painter.setBrush(nose_grad)
         painter.setPen(QPen(QColor(OUTLINE_DARK), 2))
-        painter.drawRoundedRect(cx, cy - 5, nose_length, 10, 5, 5)
+        painter.drawRoundedRect(cx, cy - 7, nose_length, 14, 7, 7)
 
         # 4. Draw LED Tip
-        led_radius = 6
+        led_radius = 7
         tip_x = cx + nose_length
         
         # Glow
-        glow_alpha = int(100 + (inverse_conf * 155))
+        glow_alpha = int(120 + (inverse_conf * 135))
         glow_color = QColor(color)
         glow_color.setAlpha(glow_alpha)
         
-        radial_grad = QRadialGradient(tip_x, cy, led_radius + 4)
+        radial_grad = QRadialGradient(tip_x, cy, led_radius + 8)
         radial_grad.setColorAt(0, glow_color)
         radial_grad.setColorAt(1, QColor(0,0,0,0))
         
         painter.setBrush(radial_grad)
         painter.setPen(Qt.NoPen)
-        painter.drawEllipse(tip_x - led_radius - 4, cy - led_radius - 4, (led_radius + 4) * 2, (led_radius + 4) * 2)
+        painter.drawEllipse(tip_x - led_radius - 8, cy - led_radius - 8, (led_radius + 8) * 2, (led_radius + 8) * 2)
         
         # Inner LED
         painter.setBrush(color)
-        painter.setPen(QPen(QColor(0,0,0,80), 1))
+        painter.setPen(QPen(QColor(0,0,0,60), 1))
         painter.drawEllipse(tip_x - led_radius, cy - led_radius, led_radius * 2, led_radius * 2)
 
 class ConfidenceHTTPHandler(BaseHTTPRequestHandler):

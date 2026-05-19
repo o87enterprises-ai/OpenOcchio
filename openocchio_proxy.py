@@ -39,12 +39,15 @@ def calculate_confidence(text: str) -> float:
     low_weight = {
         "i'm not sure":0.8, "i don't know":0.9, "it depends":0.6, "maybe":0.5,
         "might be":0.5, "possibly":0.4, "i think":0.3, "in my opinion":0.4,
-        "not certain":0.7, "hard to say":0.8, "unknown":0.9
+        "not certain":0.7, "hard to say":0.8, "unknown":0.9,
+        "not exactly":0.5, "sort of":0.4, "kind of":0.4, "somewhat":0.3, "it's possible":0.4
     }
     high_weight = {
         "certainly":0.9, "absolutely":1.0, "without a doubt":1.0, "definitely":0.9,
         "it is clear":0.8, "always":0.7, "never":0.7, "undoubtedly":1.0,
-        "yes, it is":0.9, "that is correct":0.9, "the fact is":0.8
+        "yes, it is":0.9, "that is correct":0.9, "the fact is":0.8,
+        "yes,":0.8, "indeed":0.8, "of course":0.9, "it is ":0.5, "that's correct":0.9,
+        "without question":1.0, "no question":0.9, "by definition":0.9, "is the":0.4
     }
 
     low_score = sum(w for phrase,w in low_weight.items() if phrase in text_lower)

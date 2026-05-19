@@ -11,9 +11,14 @@
 <body>
     <div class="container">
         <header>
-            <img src="assets/logo.png" alt="OpenOcchio Logo" class="logo">
+            <div class="header-top">
+                <div class="logo-container">
+                    <img src="assets/logo.png" alt="OpenOcchio Logo" class="logo">
+                </div>
+                <button id="settings-toggle" class="icon-btn" aria-label="Settings">⚙️</button>
+            </div>
             <h1>OpenOcchio</h1>
-            <p class="subtitle">Confidence Indicator</p>
+            <p class="subtitle">AI Truth & Confidence Meter</p>
         </header>
 
         <main>
@@ -24,20 +29,50 @@
 
             <form id="confidence-form">
                 <div class="input-group">
-                    <textarea id="prompt-input" placeholder="Enter a prompt to verify..." required rows="4"></textarea>
+                    <textarea id="prompt-input" placeholder="Ask a question to see AI confidence..." required rows="4"></textarea>
                 </div>
                 <button type="submit" id="submit-btn">Check Confidence</button>
             </form>
 
             <div id="result" class="result-area">
-                <!-- Results will be injected here -->
                 <div class="placeholder-text">Enter a prompt above to see AI confidence score.</div>
+            </div>
+
+            <div id="history" class="history-area" style="display: none; margin-top: 32px; border-top: 1px solid #f2f2f7; padding-top: 24px;">
+                <h3 style="font-size: 1.1rem; margin-bottom: 16px;">Recent Checks</h3>
+                <div id="history-list" class="history-list">
+                    <!-- History items will be injected here -->
+                </div>
             </div>
         </main>
 
         <footer>
-            <p>Powered by Groq & Llama 3</p>
+            <p>Powered by OpenOcchio Engine</p>
         </footer>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <h3>Settings</h3>
+            <div class="input-group">
+                <label for="backend-url">Backend URL</label>
+                <input type="url" id="backend-url" placeholder="https://your-space.hf.space">
+            </div>
+            <div class="input-group">
+                <label for="api-key">Custom API Key (Optional)</label>
+                <input type="password" id="api-key" placeholder="Groq or OpenRouter Key">
+                <small>Used if the backend supports pass-through auth.</small>
+            </div>
+            <div class="input-group">
+                <label>
+                    <input type="checkbox" id="demo-mode-toggle"> Enable Demo Mode Fallback
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button id="save-settings" class="primary-btn">Save & Close</button>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
