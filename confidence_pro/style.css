@@ -144,60 +144,133 @@ button:disabled {
     animation: fadeIn 0.5s ease-out;
 }
 
-/* Pinocchio Nose Gauge */
-.nose-gauge-container {
-    width: 100%;
-    height: 80px;
+:root {
+    --primary-color: #007aff;
+    --bg-color: #f2f2f7;
+    --card-bg: #ffffff;
+    --text-main: #1c1c1e;
+    --text-muted: #8e8e93;
+    --success: #34c759;
+    --warning: #ffcc00;
+    --danger: #ff3b30;
+    --border-radius: 12px;
+
+    /* Puppet Widget Tokens */
+    --truth-green: #2ECC71;
+    --uncertain-yellow: #F1C40F;
+    --lie-red: #E74C3C;
+    --wood-base: #C49A6C;
+    --outline-dark: #3A2F1F;
+    --nose-min: 24px;
+    --nose-max: 140px;
+    --led-size: 14px;
+    --head-size: 120px;
+}
+
+/* ... (previous global styles unchanged) ... */
+
+/* Puppet Truth Widget */
+.puppet-widget {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
     margin: 20px 0;
+}
+
+.puppet-head-container {
+    position: relative;
+    width: var(--head-size);
+    height: var(--head-size);
+    background: #fdf5e6; /* Cream/Wood light */
+    border: 3px solid var(--outline-dark);
+    border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
-    position: relative;
-    background: #f8f8f8;
-    border-radius: 12px;
-    overflow: hidden;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
 }
 
-.nose-triangle {
+/* Simple eyes for the puppet */
+.puppet-head-container::before,
+.puppet-head-container::after {
+    content: '';
     position: absolute;
-    left: 20px; /* Base starts a bit from the left */
-    height: 40px;
-    width: 0; /* Updated via JS */
-    background: var(--success);
-    clip-path: polygon(0% 50%, 100% 0%, 100% 100%);
-    transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.5s ease;
+    top: 35%;
+    width: 12px;
+    height: 12px;
+    background: var(--outline-dark);
+    border-radius: 50%;
+}
+.puppet-head-container::before { left: 30%; }
+.puppet-head-container::after { right: 30%; }
+
+.puppet-nose {
+    position: absolute;
+    top: 55%;
+    left: 50%;
+    height: 12px;
+    background: var(--wood-base);
+    border: 2px solid var(--outline-dark);
+    border-radius: 6px;
     transform-origin: left center;
+    transform: translateY(-50%);
+    transition: width 0.45s cubic-bezier(0.25, 0.1, 0.25, 1);
+    width: var(--nose-min);
+    z-index: 2;
 }
 
-/* Flip it so it points left and grows right, matching the desktop logic */
-.nose-triangle {
-    left: auto;
-    right: 50%; /* Center the tip? No, let's keep it simple: tip on left, grows right */
-    left: 20px;
+.puppet-led {
+    width: var(--led-size);
+    height: var(--led-size);
+    border-radius: 50%;
+    position: absolute;
+    right: calc(var(--led-size) / -2);
+    top: 50%;
+    transform: translateY(-50%);
+    border: 1px solid rgba(0,0,0,0.2);
+    transition: background-color 0.3s ease-out, box-shadow 0.3s ease-out;
+}
+
+.puppet-labels {
+    display: flex;
+    gap: 16px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.puppet-labels .active {
+    color: var(--text-main);
+    transform: scale(1.1);
+    transition: all 0.2s;
 }
 
 .score-circle {
-    width: 120px;
-    height: 120px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
-    margin: 0 auto 16px;
+    margin: 16px auto;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    border: 8px solid #eee;
+    border: 6px solid #eee;
+    transition: border-color 0.3s ease;
 }
 
 .score-value {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 800;
 }
 
 .score-label {
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
+    font-size: 0.7rem;
+    font-weight: 700;
 }
+
+/* ... (rest of styles) ... */
 
 .meta-info {
     font-size: 0.8rem;

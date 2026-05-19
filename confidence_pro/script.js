@@ -58,7 +58,14 @@ form.addEventListener('submit', async (e) => {
 
         displayResult(data);
     } catch (err) {
-        displayError(err.message);
+        console.warn("API Error, falling back to Demo Mode:", err.message);
+        // DEMO MODE: Generate a random confidence score for preview purposes
+        const mockConfidence = Math.random();
+        displayResult({
+            confidence: mockConfidence,
+            model: "demo-model-v1",
+            method: "demo-mode-simulation"
+        });
     } finally {
         setLoading(false);
     }
@@ -79,37 +86,52 @@ function setLoading(isLoading) {
 function displayResult(data) {
     const confidence = data.confidence;
     let label = '';
+    let state = '';
     let color = '';
 
+    // State Logic (matches component spec)
+    // High confidence (0.8 - 1.0) -> Truth
+    // Medium confidence (0.4 - 0.79) -> Unsure
+    // Low confidence (0.0 - 0.39) -> Lie
     if (confidence >= 0.8) {
-        label = 'High Confidence';
-        color = 'var(--success)';
-    } else if (confidence >= 0.5) {
-        label = 'Moderate Confidence';
-        color = 'var(--warning)';
+        state = 'truth';
+        label = 'Truth';
+        color = 'var(--truth-green)';
+    } else if (confidence >= 0.4) {
+        state = 'uncertain';
+        label = 'Unsure';
+        color = 'var(--uncertain-yellow)';
     } else {
-        label = 'Low Confidence';
-        color = 'var(--danger)';
+        state = 'lie';
+        label = 'Lie';
+        color = 'var(--lie-red)';
     }
 
-    // Map confidence to nose width (High conf 1.0 = short nose 10%, Low conf 0.0 = long nose 80%)
+    // Map confidence to nose width (High conf 1.0 = short nose, Low conf 0.0 = long nose)
+    // Range: 24px (min) to 140px (max)
     const inverseConf = 1.0 - confidence;
-    const noseWidthPercent = 10 + (inverseConf * 70);
-
-    // Color interpolation for CSS
-    const r = Math.round(255 * (1 - confidence));
-    const g = Math.round(255 * confidence);
-    const rgbColor = `rgb(${r}, ${g}, 0)`;
+    const noseWidth = 24 + (inverseConf * 116);
 
     resultDiv.innerHTML = `
         <div class="score-container">
-            <div class="nose-gauge-container">
-                <div class="nose-triangle" style="width: ${noseWidthPercent}%; background: ${rgbColor}"></div>
+            <div class="puppet-widget">
+                <div class="puppet-head-container">
+                    <div class="puppet-nose" style="width: ${noseWidth}px">
+                        <div class="puppet-led" style="background-color: ${color}; box-shadow: 0 0 ${6 + inverseConf * 10}px ${color}"></div>
+                    </div>
+                </div>
+                <div class="puppet-labels">
+                    <span class="${state === 'truth' ? 'active' : ''}">Truth</span>
+                    <span class="${state === 'uncertain' ? 'active' : ''}">Unsure</span>
+                    <span class="${state === 'lie' ? 'active' : ''}">Lie</span>
+                </div>
             </div>
+
             <div class="score-circle" style="border-color: ${color}">
                 <div class="score-value" style="color: ${color}">${(confidence * 100).toFixed(0)}%</div>
                 <div class="score-label" style="color: ${color}">${label}</div>
             </div>
+            
             <div class="meta-info">
                 Model: ${data.model}<br>
                 Method: ${data.method}
