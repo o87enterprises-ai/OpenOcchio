@@ -7,8 +7,10 @@
 OpenOcchio (the "Open Eye") is a consumer-grade AI Confidence Indicator designed for browsers, desktop apps, and mobile devices. Like the legendary puppet who inspired its name, OpenOcchio watches for "growing noses" in AI responses by calculating real-time confidence scores.
 
 ## Features
-- **Browser-in-Browser:** Run any AI chat inside the OpenOcchio PWA wrapper.
-- **Global Desktop Overlay:** A floating, always-on-top gauge that monitors your clipboard for native macOS/Windows/Linux apps.
+- **Puppet Truth Widget:** A high-fidelity Pinocchio-inspired visualizer that reacts to AI confidence scores.
+- **Settings Dashboard:** Configure backend URLs and custom API keys directly from the UI.
+- **Local History:** Keep track of your last 5 confidence checks with persistent storage.
+- **Demo Mode:** Explore the UI even without a live backend connection.
 - **Mobile PWA:** Install on iOS/Android as a standalone app to bypass App Store restrictions.
 - **Zero-Config Verification:** Simply "Copy" text to see its confidence score instantly.
 
