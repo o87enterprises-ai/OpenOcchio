@@ -19,24 +19,37 @@ app.add_middleware(
 # Initialize Groq client
 api_key = os.environ.get("GROQ_API_KEY")
 if not api_key:
-    # We'll allow it to start but endpoint will fail, 
-    # so user can set it in HF Space settings later.
     client = None
 else:
     client = Groq(api_key=api_key)
 
 class PromptInput(BaseModel):
     prompt: str
-    mode: str = "generate"          # "generate" (Ask AI) or "verify" (Analyze Text)
-    model: str = "llama3-8b-8192"   # can be any Groq model
+    mode: str = "generate"
+    model: str = "llama3-8b-8192"
     temperature: float = 0.0
     max_tokens: int = 256
 
+def verify_arithmetic(text: str):
+    # Matches patterns like "2 + 2 = 4" or "2+2=4"
+    match = re.search(r'(\d+)\s*([\+\-\*\/])\s*(\d+)\s*=\s*(\d+)', text)
+    if match:
+        a, op, b, result = match.groups()
+        a, b, result = int(a), int(b), int(result)
+
+        expected = None
+        if op == '+': expected = a + b
+        elif op == '-': expected = a - b
+        elif op == '*': expected = a * b
+        elif op == '/': expected = a / b if b != 0 else None
+
+        if expected is not None:
+            return result == expected
+    return None
+
 def confidence_from_logprobs(logprobs: list[float]) -> float:
-    """Calculate average probability from a list of logprobs."""
     if not logprobs:
         return 0.5
-    # Convert logprobs to probabilities and average them
     probs = [math.exp(lp) for lp in logprobs]
     return sum(probs) / len(probs)
 
@@ -63,7 +76,6 @@ def get_confidence(input: PromptInput):
         )
         try:
             score_text = chat_completion.choices[0].message.content.strip()
-            # Extract number
             match = re.search(r'\d+', score_text)
             score = float(match.group()) / 100.0 if match else 0.5
             return {"confidence": round(score, 4), "model": input.model, "method": "judge-analysis"}
@@ -76,19 +88,17 @@ def get_confidence(input: PromptInput):
         model=input.model,
         temperature=input.temperature,
         max_tokens=input.max_tokens,
-        logprobs=True,          # request token logprobs
+        logprobs=True,
     )
 
     ai_response = chat_completion.choices[0].message.content
     
-    # Arithmetic Override
-    text_lower = ai_response.lower()
-    arithmetic_indicators = [
-        r"\d+\s*[\+\-\*\/]\s*\d+\s*=\s*\d+", # Flexible arithmetic match
-        r"(answer|result|equals|is)\s+(is\s+)?\d+", # Answer format match
-    ]
-    if any(re.search(pattern, text_lower) for pattern in arithmetic_indicators):
-        return {"confidence": 0.99, "model": input.model, "method": f"heuristic-override: {ai_response[:20]}", "ai_response": ai_response}
+    # Arithmetic Verification Override
+    is_correct = verify_arithmetic(ai_response)
+    if is_correct is True:
+        return {"confidence": 0.99, "model": input.model, "method": "heuristic-arithmetic-verified", "ai_response": ai_response}
+    elif is_correct is False:
+        return {"confidence": 0.1, "model": input.model, "method": "heuristic-arithmetic-fabricated", "ai_response": ai_response}
 
     # Extract logprobs from response (Groq returns logprob objects)
     token_logprobs = []
@@ -97,7 +107,6 @@ def get_confidence(input: PromptInput):
             if token_info.logprob is not None:
                 token_logprobs.append(token_info.logprob)
     else:
-        # Fallback: no logprobs (unlikely with Groq)
         return {"confidence": 0.5, "model": input.model, "method": "fallback"}
 
     score = confidence_from_logprobs(token_logprobs)
