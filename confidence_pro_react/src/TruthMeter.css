@@ -106,11 +106,64 @@
 }
 
 .chat-welcome {
-    text-align: center;
-    opacity: 0.4;
+    text-align: left;
     font-size: 0.85rem;
-    margin-top: 40px;
-    padding: 0 20px;
+    margin-top: 20px;
+    padding: 0 10px;
+}
+
+.welcome-guide {
+    background: rgba(132, 0, 255, 0.05);
+    border: 1px solid rgba(132, 0, 255, 0.1);
+    padding: 20px;
+    border-radius: 16px;
+    animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.welcome-guide h3 {
+    margin-top: 0;
+    font-size: 1.1rem;
+    color: #8400ff;
+    margin-bottom: 12px;
+}
+
+.welcome-guide p {
+    margin-bottom: 12px;
+    opacity: 0.8;
+}
+
+.welcome-guide ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 16px;
+}
+
+.welcome-guide li {
+    margin-bottom: 8px;
+    padding-left: 20px;
+    position: relative;
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+.welcome-guide li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: #8400ff;
+}
+
+.welcome-hint {
+    font-size: 0.75rem;
+    background: rgba(255,255,255,0.05);
+    padding: 8px 12px;
+    border-radius: 8px;
+    border-left: 3px solid #8400ff;
 }
 
 .chat-message {

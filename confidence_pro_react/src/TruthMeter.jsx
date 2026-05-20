@@ -148,7 +148,16 @@ const TruthMeter = ({ glowColor = "132, 0, 255" }) => {
             <div className="chat-history">
                 {history.length === 0 ? (
                     <div className="chat-welcome">
-                        <p>Ask me anything. I'll analyze the truth behind the AI's words.</p>
+                        <div className="welcome-guide">
+                            <h3>👋 Welcome to OpenOcchio</h3>
+                            <p>I'm your real-time AI Integrity tool. Here's how to use me:</p>
+                            <ul>
+                                <li><strong>Ask a Question:</strong> Enter any query below to see how I analyze truth.</li>
+                                <li><strong>Watch the Nose:</strong> A growing red nose indicates a likely "Lie" or hallucination.</li>
+                                <li><strong>Check the Score:</strong> High percentages mean I'm confident in the answer.</li>
+                            </ul>
+                            <p className="welcome-hint">Switch to <strong>Live</strong> mode in settings to connect to your local proxy!</p>
+                        </div>
                     </div>
                 ) : (
                     history.map(item => {
