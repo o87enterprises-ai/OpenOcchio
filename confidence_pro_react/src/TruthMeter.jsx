@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './TruthMeter.css';
+import logoImage from './assets/logo-image.png';
+import logoText from './assets/logo-text.png';
 
 const TRUTH_GREEN = "#2ecc71";
 const UNCERTAIN_YELLOW = "#f1c40f";
@@ -10,15 +12,19 @@ const TruthMeter = ({ glowColor = "132, 0, 255" }) => {
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [history, setHistory] = useState(() => JSON.parse(localStorage.getItem('occhio_history') || '[]'));
-    const [demoMode, setDemoMode] = useState(() => localStorage.getItem('occhio_demo_mode') === 'true');
-    const [apiUrl, setApiUrl] = useState(() => localStorage.getItem('occhio_backend_url') || "https://YOUR-HF-USERNAME-openocchio-api.hf.space/confidence");
+    const [demoMode, setDemoMode] = useState(() => {
+        const stored = localStorage.getItem('occhio_demo_mode');
+        return stored === null ? true : stored === 'true';
+    });
+    const [apiUrl, setApiUrl] = useState(() => localStorage.getItem('occhio_backend_url') || "http://localhost:8000/confidence");
     
     const historyEndRef = useRef(null);
 
     useEffect(() => {
         localStorage.setItem('occhio_history', JSON.stringify(history));
+        localStorage.setItem('occhio_demo_mode', demoMode);
         scrollToBottom();
-    }, [history]);
+    }, [history, demoMode]);
 
     const scrollToBottom = () => {
         historyEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -99,8 +105,10 @@ const TruthMeter = ({ glowColor = "132, 0, 255" }) => {
         <div className="chat-interface">
             <header className="chat-header">
                 <div className="chat-header-info">
+                    <img src={logoImage} alt="Logo" className="header-logo-img" />
+                    <img src={logoText} alt="OpenOcchio" className="header-logo-text" />
                     <span className="oracle-status-dot" style={{ backgroundColor: loading ? '#007aff' : '#34c759' }}></span>
-                    <h2>OpenOcchio Oracle</h2>
+                    <h2>Ai Confidence Meter</h2>
                 </div>
                 <button className="demo-toggle" onClick={() => setDemoMode(!demoMode)}>
                     {demoMode ? '🌙 Demo' : '☀️ Live'}

@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import TruthMeter from './TruthMeter';
 import MagicBento from './MagicBento';
+import DotField from './DotField';
 import { gsap } from 'gsap';
 import './App.css';
 
@@ -38,8 +39,25 @@ const App = () => {
     return (
         <div className="app-wrapper">
             <CustomCursor />
-            {/* Background Layer: MagicBento Grid */}
+            
+            {/* Background Layer: DotField & MagicBento Grid */}
             <div className="background-layer">
+                <div style={{ width: '100vw', height: '100vh', position: 'fixed', top: 0, left: 0, zIndex: 0 }}>
+                  <DotField
+                    dotRadius={1.5}
+                    dotSpacing={30}
+                    cursorRadius={350}
+                    cursorForce={0.31}
+                    bulgeOnly={false}
+                    bulgeStrength={17}
+                    glowRadius={280}
+                    sparkle
+                    waveAmplitude={0}
+                    gradientFrom="#25cbcf"
+                    gradientTo="#ff6a6a"
+                    glowColor="#120F17"
+                  />
+                </div>
                 <MagicBento 
                     textAutoHide={true}
                     enableStars={true}

@@ -34,7 +34,19 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    opacity: 0.8;
+    opacity: 1;
+    color: #fff;
+}
+
+.header-logo-img {
+    height: 32px;
+    width: auto;
+}
+
+.header-logo-text {
+    height: 20px;
+    width: auto;
+    filter: brightness(0) invert(1); /* Change to white */
 }
 
 .demo-toggle {
