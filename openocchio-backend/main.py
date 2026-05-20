@@ -80,6 +80,7 @@ def get_confidence(input: PromptInput):
     )
 
     ai_response = chat_completion.choices[0].message.content
+    print(f"DEBUG: AI Response: {ai_response}")
     
     # Arithmetic Override
     text_lower = ai_response.lower()
