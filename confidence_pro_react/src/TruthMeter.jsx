@@ -113,10 +113,8 @@ const TruthMeter = ({ glowColor = "132, 0, 255" }) => {
         <div className="chat-interface">
             <header className="chat-header">
                 <div className="chat-header-info">
-                    <img src={logoImage} alt="Logo" className="header-logo-img" />
-                    <img src={logoText} alt="OpenOcchio" className="header-logo-text" />
                     <span className="oracle-status-dot" style={{ backgroundColor: loading ? '#007aff' : '#34c759' }}></span>
-                    <h2>Ai Confidence Meter</h2>
+                    <span className="live-status-text">{loading ? 'ANALYZING...' : 'SYSTEM READY'}</span>
                 </div>
                 <button className="demo-toggle" onClick={() => setDemoMode(!demoMode)}>
                     {demoMode ? '🌙 Demo' : '☀️ Live'}

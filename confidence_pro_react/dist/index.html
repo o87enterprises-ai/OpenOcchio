@@ -5,8 +5,25 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OpenOcchio</title>
-    <script type="module" crossorigin src="/assets/index-C1Vw2uND.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-t79rOk8D.css">
+    <script>
+      // Force unregister service workers to clear cache
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          for (const registration of registrations) {
+            registration.unregister();
+          }
+        });
+      }
+      // Reset stale config if it exists
+      const url = localStorage.getItem('occhio_backend_url');
+      if (url && url.includes("YOUR-HF-USERNAME")) {
+        localStorage.removeItem('occhio_backend_url');
+        localStorage.removeItem('occhio_demo_mode');
+      }
+    </script>
+
+    <script type="module" crossorigin src="/assets/index-D0Mu_h0f.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-COcXwM2U.css">
   </head>
   <body>
     <div id="root"></div>
