@@ -86,6 +86,7 @@ def save_to_training_set(text, confidence, markers_found, method="heuristic"):
         log(f"Failed to save training data: {e}")
 
 def calculate_confidence(text: str) -> tuple:
+    log(f"DEBUG: calculate_confidence input: '{text}'")
     text_lower = text.lower()
     words = text_lower.split()
 
