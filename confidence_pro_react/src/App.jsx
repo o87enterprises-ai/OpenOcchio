@@ -48,8 +48,8 @@ const App = () => {
                     dotSpacing={30}
                     cursorRadius={350}
                     cursorForce={0.31}
-                    bulgeOnly={false}
-                    bulgeStrength={17}
+                    bulgeOnly={true}
+                    bulgeStrength={60}
                     glowRadius={280}
                     sparkle
                     waveAmplitude={0}
