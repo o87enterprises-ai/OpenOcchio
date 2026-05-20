@@ -25,15 +25,70 @@ AI_HOSTS = [
 ]
 
 OVERLAY_URL = "http://localhost:9876/update"
+TRAINING_DATA = "/Volumes/DuckDrive2.1/SoftwareDev2.0/o87Dev/builds2.0/builds/OpenOcchio/training/scored_responses.jsonl"
+OLLAMA_URL = "http://localhost:11434/api/generate"
+OLLAMA_MODEL = "qwen2.5:3b"
+USE_OLLAMA_BACKUP = True
 
-def calculate_confidence(text: str) -> float:
+def log(msg):
+    """Write to mitmproxy log and our own clean file."""
+    ctx.log.info(msg)
+    with open(DEBUG_LOG, "a") as f:
+        f.write(msg + "\n")
+
+def get_ollama_confidence(text):
+    """Ask local Ollama to judge the confidence of the text."""
+    # Truncate text to avoid long processing
+    truncated_text = text[:1000]
+    prompt = (
+        f"Analyze the following AI response for CONFIDENCE markers. "
+        f"Rate how sure the AI sounds on a scale of 0 to 100. "
+        f"Consider hedging (e.g., 'maybe', 'I think') as low confidence. "
+        f"Respond ONLY with the number.\n\n"
+        f"AI Response: \"{truncated_text}\"\n\n"
+        f"Confidence Score:"
+    )
+    payload = {
+        "model": OLLAMA_MODEL,
+        "prompt": prompt,
+        "stream": False,
+        "options": {"temperature": 0.0, "num_predict": 10}
+    }
+    try:
+        resp = requests.post(OLLAMA_URL, json=payload, timeout=2, proxies={"http": None, "https": None})
+        if resp.status_code == 200:
+            result = resp.json().get("response", "").strip()
+            match = re.search(r'\d+', result)
+            if match:
+                score = float(match.group()) / 100.0
+                return min(1.0, max(0.0, score))
+    except Exception as e:
+        log(f"Ollama call failed: {e}")
+    return None
+
+def save_to_training_set(text, confidence, markers_found, method="heuristic"):
+    """Append the scored response to a JSONL file for future training."""
+    try:
+        import datetime
+        entry = {
+            "text": text,
+            "confidence": round(confidence, 3),
+            "markers": markers_found,
+            "method": method,
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+        with open(TRAINING_DATA, "a") as f:
+            f.write(json.dumps(entry) + "\n")
+    except Exception as e:
+        log(f"Failed to save training data: {e}")
+
+def calculate_confidence(text: str) -> tuple:
     text_lower = text.lower()
     words = text_lower.split()
 
     # ------------------------------------------------------------
     # 1. COMMON-SENSE & FACTUAL CERTAINTY (99% Override)
     # ------------------------------------------------------------
-    # Detect simple arithmetic or universal truths requested by user
     common_sense_patterns = [
         r"2\s*\+\s*2\s*=\s*4",
         r"1\s*\+\s*\(-1\)\s*=\s*0",
@@ -44,7 +99,7 @@ def calculate_confidence(text: str) -> float:
     import re
     for pattern in common_sense_patterns:
         if re.search(pattern, text_lower):
-            return 0.99
+            return 0.99, ["common_sense_override"]
 
     # Length bonus for very short factual answers
     if len(words) <= 10 and any(word in text_lower for word in ["yes","no","is","are","equals","="]):
@@ -60,7 +115,8 @@ def calculate_confidence(text: str) -> float:
         "it's possible":0.4, "i apologize":0.8, "i am sorry":0.7, 
         "as an ai":0.9, "unfortunately":0.6, "limited information":0.5,
         "i'd push back":0.4, "one gentle qualifier":0.4, "subtle but important":0.3,
-        "indeterminate form":0.5, "caveat":0.5
+        "indeterminate form":0.5, "caveat":0.5, "unclear":0.4, "ambiguous":0.4,
+        "hypothetically":0.3, "theoretically":0.3
     }
     high_weight = {
         "certainly":0.9, "absolutely":1.0, "without a doubt":1.0, "definitely":0.9,
@@ -69,16 +125,22 @@ def calculate_confidence(text: str) -> float:
         "yes,":0.8, "indeed":0.8, "of course":0.9, "it is ":0.5, "that's correct":0.9,
         "without question":1.0, "no question":0.9, "by definition":0.9, "is the":0.4,
         "verified":0.8, "confirmed":0.9, "accurately":0.7, "precisely":0.7,
-        "you're absolutely right":0.9, "mathematically":0.6, "reconciliation":0.5
+        "you're absolutely right":0.9, "mathematically":0.6, "reconciliation":0.5,
+        "factually":0.8, "proven":0.9, "guaranteed":1.0, "strictly":0.7
     }
 
-    low_score = sum(w for phrase,w in low_weight.items() if phrase in text_lower)
-    high_score = sum(w for phrase,w in high_weight.items() if phrase in text_lower)
+    found_low = [phrase for phrase in low_weight if phrase in text_lower]
+    found_high = [phrase for phrase in high_weight if phrase in text_lower]
+
+    low_score = sum(low_weight[p] for p in found_low)
+    high_score = sum(high_weight[p] for p in found_high)
 
     total = low_score + high_score + 0.001
     raw_conf = high_score / total
     conf = min(0.95, raw_conf + length_bonus)
-    return max(0.05, conf)
+    final_conf = max(0.05, conf)
+    
+    return final_conf, found_low + found_high
 
 def response(flow: http.HTTPFlow) -> None:
     host = flow.request.pretty_host
@@ -138,6 +200,7 @@ def response(flow: http.HTTPFlow) -> None:
         return
 
     conf = None
+    markers = []
 
     # 1. Try direct token logprobs (OpenAI style)
     try:
@@ -146,6 +209,7 @@ def response(flow: http.HTTPFlow) -> None:
             probs = [math.exp(t.get("logprob", -100)) for t in content if t.get("logprob") is not None]
             if probs:
                 conf = sum(probs) / len(probs)
+                markers = ["logprobs"]
     except:
         pass
 
@@ -162,8 +226,23 @@ def response(flow: http.HTTPFlow) -> None:
 
         if ai_text:
             log(f"AI TEXT: {ai_text[:200]}")
-            conf = calculate_confidence(ai_text)
-            log(f"Heuristic score: confidence={conf}")
+            conf, markers = calculate_confidence(ai_text)
+            method = "heuristic"
+            
+            # 3. Optional high-quality backup: Ollama Judge
+            # Triggered if heuristic is unsure (around 0.5) or no markers found
+            if USE_OLLAMA_BACKUP and (0.4 <= conf <= 0.6 or not markers):
+                log("Heuristic uncertain, calling Ollama judge...")
+                ollama_conf = get_ollama_confidence(ai_text)
+                if ollama_conf is not None:
+                    conf = ollama_conf
+                    method = "ollama-judge"
+                    log(f"Ollama judge score: confidence={conf}")
+                else:
+                    log("Ollama judge failed, sticking with heuristic")
+
+            log(f"Final score: confidence={conf}, method={method}, markers={markers}")
+            save_to_training_set(ai_text, conf, markers, method=method)
 
     if conf is not None:
         try:

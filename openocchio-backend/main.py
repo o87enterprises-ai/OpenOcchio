@@ -1,5 +1,6 @@
 import os
 import math
+import re
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -30,6 +31,14 @@ class PromptInput(BaseModel):
     model: str = "llama3-8b-8192"   # can be any Groq model
     temperature: float = 0.0
     max_tokens: int = 256
+
+def confidence_from_logprobs(logprobs: list[float]) -> float:
+    """Calculate average probability from a list of logprobs."""
+    if not logprobs:
+        return 0.5
+    # Convert logprobs to probabilities and average them
+    probs = [math.exp(lp) for lp in logprobs]
+    return sum(probs) / len(probs)
 
 @app.post("/confidence")
 def get_confidence(input: PromptInput):
@@ -68,7 +77,6 @@ def get_confidence(input: PromptInput):
         temperature=input.temperature,
         max_tokens=input.max_tokens,
         logprobs=True,          # request token logprobs
-        top_logprobs=1,
     )
     # Extract logprobs from response (Groq returns logprob objects)
     token_logprobs = []
