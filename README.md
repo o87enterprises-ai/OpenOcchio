@@ -24,7 +24,7 @@ Experience the OpenOcchio interface directly in your browser:
 ---
 
 ## 📸 Screenshots
-### Desktop Overlay & Interface
+### Web & Mobile Interface (React Pro)
 <p align="center">
   <img src="docs/assets/screenshot1.png" width="800" alt="OpenOcchio Interface 1">
   <br>
@@ -48,7 +48,7 @@ Experience the OpenOcchio interface directly in your browser:
 
 ## 💻 Desktop Installation & Usage (Recommended)
 
-The desktop version provides the full experience: real-time traffic interception and the floating Pinocchio gauge.
+The desktop version provides real-time traffic interception and a floating Pinocchio gauge. *(Note: Desktop UI redesign is currently in progress).*
 
 ### 1. Prerequisites
 - **Python 3.10+**
