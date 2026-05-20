@@ -8,7 +8,7 @@ from mitmproxy import http, ctx
 # ------------------------------------------------------------
 # Dedicated debug log (clean, no terminal flood)
 # ------------------------------------------------------------
-DEBUG_LOG = "/tmp/occhio_debug.log"
+DEBUG_LOG = "/tmp/occhio_debug_final.log"
 
 def log(msg):
     """Write to mitmproxy log and our own clean file."""

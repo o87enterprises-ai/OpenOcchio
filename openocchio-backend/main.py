@@ -78,9 +78,22 @@ def get_confidence(input: PromptInput):
         max_tokens=input.max_tokens,
         logprobs=True,          # request token logprobs
     )
+
+    ai_response = chat_completion.choices[0].message.content
+    
+    # Arithmetic Override
+    text_lower = ai_response.lower()
+    arithmetic_indicators = [
+        r"\b\d+\s*[\+\-\*\/]\s*\d+\s*=\s*\d+\b",
+        r"\bthe answer is \d+\b",
+        r"\bresult is \d+\b",
+        r"\bequals \d+\b",
+    ]
+    if any(re.search(pattern, text_lower) for pattern in arithmetic_indicators):
+        return {"confidence": 0.99, "model": input.model, "method": "heuristic-arithmetic-override", "ai_response": ai_response}
+
     # Extract logprobs from response (Groq returns logprob objects)
     token_logprobs = []
-    # The response object contains logprobs for each token in choices[0].logprobs.content
     if chat_completion.choices[0].logprobs and chat_completion.choices[0].logprobs.content:
         for token_info in chat_completion.choices[0].logprobs.content:
             if token_info.logprob is not None:
