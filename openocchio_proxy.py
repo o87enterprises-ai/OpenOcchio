@@ -144,7 +144,8 @@ def calculate_confidence(text: str) -> tuple:
         "verified":0.8, "confirmed":0.9, "accurately":0.7, "precisely":0.7,
         "you're absolutely right":0.9, "mathematically":0.6, "reconciliation":0.5,
         "factually":0.8, "proven":0.9, "guaranteed":1.0, "strictly":0.7,
-        "correct":0.6, "exact":0.7, "precisely":0.7
+        "correct":0.6, "exact":0.7, "precisely":0.7, "the answer is":0.8,
+        "it is":0.4, "is":0.2, "are":0.2, "was":0.2
     }
 
     found_low = [phrase for phrase in low_weight if phrase in text_lower]
@@ -155,14 +156,22 @@ def calculate_confidence(text: str) -> tuple:
 
     # Base confidence starts higher for neutral short answers
     base_neutral = 0.5
-    if not found_low and not found_high:
-        # If no markers but very short, assume confident enough
-        if len(words) <= 10: base_neutral = 0.7
-        else: base_neutral = 0.5
+    if not found_low:
+        # If no hesitant markers and very short, assume high confidence
+        if len(words) <= 12: 
+            base_neutral = 0.85 
+        elif len(words) <= 25:
+            base_neutral = 0.7
+        else:
+            base_neutral = 0.5
         
     total = low_score + high_score + 0.001
     raw_conf = (high_score / total) if (found_low or found_high) else base_neutral
     
+    # If no low markers found at all, enforce a "Confidence Floor" for short answers
+    if not found_low and len(words) <= 15:
+        raw_conf = max(raw_conf, 0.8)
+
     conf = min(0.99, raw_conf + length_bonus)
     final_conf = max(0.05, conf)
     
@@ -256,9 +265,11 @@ def response(flow: http.HTTPFlow) -> None:
             method = "heuristic"
             
             # 3. Optional high-quality backup: Ollama Judge
-            # Triggered if heuristic is unsure (around 0.5) or no markers found
-            if USE_OLLAMA_BACKUP and (0.4 <= conf <= 0.6 or not markers):
-                log("Heuristic uncertain, calling Ollama judge...")
+            # Only trigger if heuristic is TRULY unsure or suspicious
+            # AND the answer isn't a simple short fact (which heuristic handles well now)
+            words = ai_text.split()
+            if USE_OLLAMA_BACKUP and (0.3 <= conf <= 0.6) and len(words) > 15:
+                log("Heuristic suspicious, calling Ollama judge...")
                 ollama_conf = get_ollama_confidence(ai_text)
                 if ollama_conf is not None:
                     conf = ollama_conf
