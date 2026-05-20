@@ -1,7 +1,7 @@
 <p align="center">
-  <img src="docs/assets/logo-image.png" width="200" alt="OpenOcchio Logo Image">
+  <img src="docs/assets/logo-image.png" width="500" alt="OpenOcchio Logo Image">
   <br>
-  <img src="docs/assets/logo-text.png" width="400" alt="OpenOcchio Logo Text">
+  <img src="docs/assets/logo-text.png" width="300" alt="OpenOcchio Logo Text">
 </p>
 
 # OpenOcchio
