@@ -88,6 +88,7 @@ def get_confidence(input: PromptInput):
         r"(answer|result|equals|is)\s+(is\s+)?\d+", # Answer format match
     ]
     if any(re.search(pattern, text_lower) for pattern in arithmetic_indicators):
+        print(f"DEBUG: Triggered arithmetic override for: {ai_response}")
         return {"confidence": 0.99, "model": input.model, "method": "heuristic-arithmetic-override", "ai_response": ai_response}
 
     # Extract logprobs from response (Groq returns logprob objects)
