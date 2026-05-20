@@ -45,7 +45,6 @@ const App = () => {
             {/* Main Branding Header (Below DotField but above background) */}
             <header className="main-branding-header">
                 <img src={logoImage} alt="OpenOcchio Logo" className="main-logo-image" />
-                <img src={logoText} alt="OpenOcchio" className="main-logo-text" />
             </header>
 
             {/* Background Layer: DotField & MagicBento Grid */}
