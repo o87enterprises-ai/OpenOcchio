@@ -14,9 +14,17 @@ const TruthMeter = ({ glowColor = "132, 0, 255" }) => {
     const [history, setHistory] = useState(() => JSON.parse(localStorage.getItem('occhio_history') || '[]'));
     const [demoMode, setDemoMode] = useState(() => {
         const stored = localStorage.getItem('occhio_demo_mode');
-        return stored === null ? true : stored === 'true';
+        // If never set, or if the URL is the old placeholder, force demo mode true
+        const url = localStorage.getItem('occhio_backend_url');
+        if (stored === null || (url && url.includes("YOUR-HF-USERNAME"))) return true;
+        return stored === 'true';
     });
-    const [apiUrl, setApiUrl] = useState(() => localStorage.getItem('occhio_backend_url') || "http://localhost:8000/confidence");
+
+    const [apiUrl, setApiUrl] = useState(() => {
+        const stored = localStorage.getItem('occhio_backend_url');
+        if (stored && !stored.includes("YOUR-HF-USERNAME")) return stored;
+        return "http://localhost:8000/confidence";
+    });
     
     const historyEndRef = useRef(null);
 
