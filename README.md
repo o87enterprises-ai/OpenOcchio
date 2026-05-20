@@ -1,5 +1,7 @@
 <p align="center">
-  <img src="confidence_pro/assets/logo.png" width="600">
+  <img src="docs/assets/logo-image.png" width="200" alt="OpenOcchio Logo Image">
+  <br>
+  <img src="docs/assets/logo-text.png" width="400" alt="OpenOcchio Logo Text">
 </p>
 
 # OpenOcchio
@@ -10,12 +12,37 @@
 
 ---
 
+## 🌐 Live Demo
+Experience the OpenOcchio interface directly in your browser:
+
+**[OpenOcchio Live PWA](https://ae5d4d0b.openocchio.pages.dev)**
+
+<p align="center">
+  <iframe src="https://ae5d4d0b.openocchio.pages.dev" width="100%" height="600px" style="border: 2px solid #8400ff; border-radius: 20px;"></iframe>
+</p>
+
+---
+
+## 📸 Screenshots
+### Desktop Overlay & Interface
+<p align="center">
+  <img src="docs/assets/screenshot1.png" width="800" alt="OpenOcchio Interface 1">
+  <br>
+  <img src="docs/assets/screenshot2.png" width="800" alt="OpenOcchio Interface 2">
+  <br>
+  <img src="docs/assets/screenshot3.png" width="800" alt="OpenOcchio Interface 3">
+</p>
+
+---
+
 ## ✨ Key Features
 - **Pinocchio's Nose UI:** A playful, intuitive gauge where "lies" (low confidence) make the nose grow longer and turn red.
+- **Onboarding Guide:** New users are greeted with a simple walkthrough that disappears after the first query.
 - **Settings & Persistence:** Configure backend URLs and API keys directly in the app. Includes local history for recent confidence checks.
 - **Real-time Interception:** Monitors traffic from `claude.ai`, `chat.deepseek.com`, and more using a transparent proxy.
-- **Enhanced Heuristics:** Expanded weighted keyword analysis and factual-answer detection for more precise "truth" scoring.
-- **Multi-Platform:** Desktop overlay for macOS/Linux and a Mobile-ready PWA (now with a React-based Pro version).
+- **Enhanced Heuristics:** Expanded weighted keyword analysis, arithmetic detection, and factual-answer logic.
+- **Ollama Judge Backup:** Optional high-quality validation using a local Ollama instance (e.g., Qwen 2.5).
+- **Multi-Platform:** Desktop overlay for macOS/Linux and a Mobile-ready PWA (React-based Pro version).
 
 ---
 
@@ -27,6 +54,7 @@ The desktop version provides the full experience: real-time traffic interception
 - **Python 3.10+**
 - **mitmproxy** (`pip install mitmproxy`)
 - **PySide6** (`pip install PySide6`)
+- **Ollama** (optional, for advanced judging)
 
 ### 2. Launch Sequence
 OpenOcchio requires two components running in parallel:
@@ -52,19 +80,13 @@ Now, whenever you chat with Claude or DeepSeek, the Pinocchio gauge will react i
 
 ## 📱 Mobile & Web (PWA)
 
-OpenOcchio can also be deployed as a standalone mobile app using Hugging Face Spaces and GitHub Pages.
+OpenOcchio can also be deployed as a standalone mobile app using Hugging Face Spaces and Cloudflare Pages.
 
 ### 1. Backend Setup
 Deploy the `openocchio-backend/` directory as a **Docker Space** on Hugging Face. Add your `GROQ_API_KEY` to the Space secrets.
 
-### 2. Frontend Setup (Vanilla & React)
-We now offer two versions of the frontend:
-- **Vanilla PWA (`confidence_pro/`):** Lightweight, zero-dependency, and highly compatible. Now features a settings menu and local history.
-- **React Pro (`confidence_pro_react/`):** A modern, component-based version with advanced animations and state management.
-
-1. Update the **Backend URL** in the App Settings (accessible via the ⚙️ icon).
-2. Host either folder on GitHub Pages.
-3. On your phone, "Add to Home Screen" to install the PWA.
+### 2. Frontend Setup (React Pro)
+Update the **Backend URL** in the App Settings (accessible via the ⚙️ icon) and host on Cloudflare Pages.
 
 ---
 

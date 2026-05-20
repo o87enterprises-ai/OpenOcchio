@@ -9,7 +9,7 @@ OpenOcchio is a consumer-grade AI confidence indicator that adds a "verification
 To run the local tools (Overlay or CLI), you must first activate the Python environment.
 
 ### Step A: Activate/Create Virtual Environment
-From your project root (`/Volumes/DuckDrive2.1/SoftwareDev2.0/o87Dev/builds2.0/builds/OpenOcchio`):
+From your project root:
 
 **If the venv exists:**
 ```bash

@@ -37,10 +37,10 @@ After updating, restart mitmweb. Then even *“Yes. Paris is the capital of Fran
 ## 🧱 File paths (absolute)
 | File | Path |
 |------|------|
-| Proxy script (this is the core) | `/Volumes/DuckDrive2.1/SoftwareDev2.0/o87Dev/builds2.0/builds/OpenOcchio/openocchio_proxy.py` |
-| Overlay script | `/Volumes/DuckDrive2.1/SoftwareDev2.0/o87Dev/builds2.0/builds/OpenOcchio/confidence_pro/system_overlay.py` |
+| Proxy script (this is the core) | `./openocchio_proxy.py` |
+| Overlay script | `./confidence_pro/system_overlay.py` |
 | Debug log (created at runtime) | `/tmp/occhio_debug.log` |
-| Handoff file | `/Volumes/DuckDrive2.1/SoftwareDev2.0/o87Dev/builds2.0/builds/OpenOcchio/HANDOFF_2026-05-16-FINAL.md` |
+| Handoff file | `./HANDOFF_2026-05-16-FINAL.md` |
 
 ---
 
@@ -54,13 +54,12 @@ pkill -f mitmweb 2>/dev/null
 sleep 1
 
 # 2. Start the overlay
-/Volumes/DuckDrive2.1/SoftwareDev2.0/o87Dev/builds2.0/builds/OpenOcchio/confidence_wrapper/venv/bin/python3 \
-  /Volumes/DuckDrive2.1/SoftwareDev2.0/o87Dev/builds2.0/builds/OpenOcchio/confidence_pro/system_overlay.py &
+python3 ./confidence_pro/system_overlay.py &
 
 # 3. Wait a moment, then start mitmweb with the proxy script
 sleep 2
 rm -f /tmp/occhio_debug.log
-mitmweb --listen-port 8082 -s /Volumes/DuckDrive2.1/SoftwareDev2.0/o87Dev/builds2.0/builds/OpenOcchio/openocchio_proxy.py &> /dev/null &
+mitmweb --listen-port 8082 -s ./openocchio_proxy.py &> /dev/null &
 ```
 
 After that:
@@ -95,3 +94,4 @@ After that:
 
 ## 🧠 Summary
 The entire pipeline is **live and functional**. The only thing between you and a fully reactive gauge is a richer set of marker words. You’ve already captured real Claude responses – that data will be invaluable for training a smarter model later. Everything else is solid.
+ later. Everything else is solid.

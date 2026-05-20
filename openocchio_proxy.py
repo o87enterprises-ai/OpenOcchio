@@ -1,3 +1,4 @@
+import os
 import json
 import math
 import re
@@ -25,7 +26,9 @@ AI_HOSTS = [
 ]
 
 OVERLAY_URL = "http://localhost:9876/update"
-TRAINING_DATA = "/Volumes/DuckDrive2.1/SoftwareDev2.0/o87Dev/builds2.0/builds/OpenOcchio/training/scored_responses.jsonl"
+# Use relative path for training data
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+TRAINING_DATA = os.path.join(SCRIPT_DIR, "training", "scored_responses.jsonl")
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "qwen2.5:3b"
 USE_OLLAMA_BACKUP = True

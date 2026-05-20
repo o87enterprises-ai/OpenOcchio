@@ -17,3 +17,10 @@ Thumbs.db
 # Project specific
 confidence_wrapper/harness_output.txt
 confidence_wrapper/test_results.json
+.wrangler/
+training/
+assets/
+*.bak
+*.bak2
+*.backup-*
+!docs/assets/
