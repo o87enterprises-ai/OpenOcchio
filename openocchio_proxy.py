@@ -87,23 +87,37 @@ def calculate_confidence(text: str) -> tuple:
     words = text_lower.split()
 
     # ------------------------------------------------------------
-    # 1. COMMON-SENSE & FACTUAL CERTAINTY (99% Override)
+    # 1. COMMON-SENSE & ARITHMETIC CERTAINTY (99% Override)
     # ------------------------------------------------------------
-    common_sense_patterns = [
-        r"2\s*\+\s*2\s*=\s*4",
+    # Broaden detection to catch "2 + 2 = 4", "The answer is 4", etc.
+    arithmetic_indicators = [
+        r"\b\d+\s*[\+\-\*\/]\s*\d+\s*=\s*\d+\b",  # e.g., 2 + 2 = 4
+        r"\bthe answer is \d+\b",                # e.g., the answer is 4
+        r"\bresult is \d+\b",
+        r"\bequals \d+\b",
+        r"\b2\s*\+\s*2\s*=\s*4\b",
         r"1\s*\+\s*\(-1\)\s*=\s*0",
         r"1\s*\+\s*-1\s*=\s*0",
         r"1\s* raised to the infinite power equals 1",
         r"1\^∞\s*=\s*1"
     ]
     import re
-    for pattern in common_sense_patterns:
+    for pattern in arithmetic_indicators:
         if re.search(pattern, text_lower):
-            return 0.99, ["common_sense_override"]
+            # If it's a very simple math answer, give it a massive confidence boost
+            return 0.99, ["arithmetic_override"]
+
+    # ------------------------------------------------------------
+    # 2. DEFINITIVE STATE DETECTION
+    # ------------------------------------------------------------
+    # If the answer is purely numerical and short, it's almost certainly confident
+    if len(words) <= 5 and any(char.isdigit() for char in text):
+        return 0.98, ["short_numerical_answer"]
 
     # Length bonus for very short factual answers
-    if len(words) <= 10 and any(word in text_lower for word in ["yes","no","is","are","equals","="]):
-        length_bonus = 0.3
+    # Increased bonus and added more triggers
+    if len(words) <= 15 and any(word in text_lower for word in ["yes","no","is","are","equals","=","correct","right"]):
+        length_bonus = 0.45
     else:
         length_bonus = 0.0
 
@@ -116,7 +130,7 @@ def calculate_confidence(text: str) -> tuple:
         "as an ai":0.9, "unfortunately":0.6, "limited information":0.5,
         "i'd push back":0.4, "one gentle qualifier":0.4, "subtle but important":0.3,
         "indeterminate form":0.5, "caveat":0.5, "unclear":0.4, "ambiguous":0.4,
-        "hypothetically":0.3, "theoretically":0.3
+        "hypothetically":0.3, "theoretically":0.3, "perhaps":0.4
     }
     high_weight = {
         "certainly":0.9, "absolutely":1.0, "without a doubt":1.0, "definitely":0.9,
@@ -126,7 +140,8 @@ def calculate_confidence(text: str) -> tuple:
         "without question":1.0, "no question":0.9, "by definition":0.9, "is the":0.4,
         "verified":0.8, "confirmed":0.9, "accurately":0.7, "precisely":0.7,
         "you're absolutely right":0.9, "mathematically":0.6, "reconciliation":0.5,
-        "factually":0.8, "proven":0.9, "guaranteed":1.0, "strictly":0.7
+        "factually":0.8, "proven":0.9, "guaranteed":1.0, "strictly":0.7,
+        "correct":0.6, "exact":0.7, "precisely":0.7
     }
 
     found_low = [phrase for phrase in low_weight if phrase in text_lower]
@@ -135,9 +150,17 @@ def calculate_confidence(text: str) -> tuple:
     low_score = sum(low_weight[p] for p in found_low)
     high_score = sum(high_weight[p] for p in found_high)
 
+    # Base confidence starts higher for neutral short answers
+    base_neutral = 0.5
+    if not found_low and not found_high:
+        # If no markers but very short, assume confident enough
+        if len(words) <= 10: base_neutral = 0.7
+        else: base_neutral = 0.5
+        
     total = low_score + high_score + 0.001
-    raw_conf = high_score / total
-    conf = min(0.95, raw_conf + length_bonus)
+    raw_conf = (high_score / total) if (found_low or found_high) else base_neutral
+    
+    conf = min(0.99, raw_conf + length_bonus)
     final_conf = max(0.05, conf)
     
     return final_conf, found_low + found_high
