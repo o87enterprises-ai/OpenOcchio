@@ -80,15 +80,12 @@ def get_confidence(input: PromptInput):
     )
 
     ai_response = chat_completion.choices[0].message.content
-    print(f"DEBUG: AI Response: {ai_response}")
     
     # Arithmetic Override
     text_lower = ai_response.lower()
     arithmetic_indicators = [
-        r"\b\d+\s*[\+\-\*\/]\s*\d+\s*=\s*\d+\b",
-        r"\bthe answer is \d+\b",
-        r"\bresult is \d+\b",
-        r"\bequals \d+\b",
+        r"\d+\s*[\+\-\*\/]\s*\d+\s*=\s*\d+", # Flexible arithmetic match
+        r"(answer|result|equals|is)\s+(is\s+)?\d+", # Answer format match
     ]
     if any(re.search(pattern, text_lower) for pattern in arithmetic_indicators):
         return {"confidence": 0.99, "model": input.model, "method": "heuristic-arithmetic-override", "ai_response": ai_response}
