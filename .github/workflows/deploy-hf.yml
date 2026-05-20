@@ -1,0 +1,26 @@
+name: Deploy to Hugging Face Space
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  sync-to-hf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          cd openocchio-backend
+          git init
+          git config --global user.email "bot@github.com"
+          git config --global user.name "GitHub Action"
+          git remote add space https://oauth2:$HF_TOKEN@huggingface.co/spaces/OpenEdin/OpenOcchio-Backend
+          git add .
+          git commit -m "Sync backend from GitHub" || echo "No changes to commit"
+          git push --force space HEAD:master
