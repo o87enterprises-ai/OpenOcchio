@@ -22,8 +22,8 @@ const TruthMeter = ({ glowColor = "132, 0, 255" }) => {
 
     const [apiUrl, setApiUrl] = useState(() => {
         const stored = localStorage.getItem('occhio_backend_url');
-        if (stored && !stored.includes("YOUR-HF-USERNAME")) return stored;
-        return "http://localhost:8000/confidence";
+        if (stored && !stored.includes("YOUR-HF-USERNAME") && !stored.includes("localhost:8000")) return stored;
+        return "https://openedin-openocchio-backend.hf.space/confidence";
     });
     
     const historyEndRef = useRef(null);

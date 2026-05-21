@@ -1,7 +1,7 @@
 // script.js – OpenOcchio Mobile PWA
 
 // Initial settings with localStorage support
-const DEFAULT_API_URL = "https://YOUR-HF-USERNAME-openocchio-api.hf.space/confidence";
+const DEFAULT_API_URL = "https://openedin-openocchio-backend.hf.space/confidence";
 let API_URL = localStorage.getItem('occhio_backend_url') || DEFAULT_API_URL;
 let CUSTOM_KEY = localStorage.getItem('occhio_api_key') || "";
 let DEMO_MODE = localStorage.getItem('occhio_demo_mode') === 'true';
